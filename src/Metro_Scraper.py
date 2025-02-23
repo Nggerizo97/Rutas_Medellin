@@ -7,7 +7,7 @@ import csv
 import time
 
 # Configura las credenciales de la API de Twitter
-BEARER_TOKEN = 'TU_BEARER_TOKEN'  # Reemplaza con tu Bearer Token
+BEARER_TOKEN = '|1AAAAAAAAAAAAAAAAAAAAAGcIzgEAAAAA5bnPKpjWrCBS2ExDs7Lm%2BTBhWkc%3DbokIku7lvunDE2g1JEH8inAtSMqFqCudFwAvu5IU8rHwkTYVPR'  # Reemplaza con tu Bearer Token
 
 # Inicializa el cliente de Tweepy
 client = tweepy.Client(bearer_token=BEARER_TOKEN)
