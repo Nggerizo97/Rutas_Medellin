@@ -1,2 +1,13 @@
 tweepy
 pandas
+beautifulsoup4
+PyMuPDF
+python-docx
+scholarly
+sumy
+tenacity
+azure-ai-inference
+azure-core
+python-docx
+transformers
+torch
