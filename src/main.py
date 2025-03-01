@@ -34,14 +34,14 @@ async def get_tweets(client, tweets):
         
 
 async def get_replies(client, conversation_id):
-    """ Obtiene respuestas a un tweet específico usando conversation_id_str """
+    """ Gets replies to a specific tweet using conversation_id_str """
     # replies = await client.search_tweet(f"conversation_id:{conversation_id}", product="Latest")
     # return replies
     if not conversation_id:
         return []
     
     query = f"conversation_id:{conversation_id}"
-    #& print(f"Searching replies with query: {query}")  # Agregar este print
+    #& print(f"Searching replies with query: {query}") 
 
     replies = await client.search_tweet(query, product="Latest")
     
@@ -89,6 +89,8 @@ async def main():
     tweets = None
     
     while tweet_count < MINIMUM_TWEETS:
+        
+        # To make sure we don't get banned
         try:
             tweets = await get_tweets(client, tweets)
         except TooManyRequests as e:
@@ -97,11 +99,11 @@ async def main():
             wait_time = rate_limit_reset - datetime.now()
             await asyncio.sleep(max(wait_time.total_seconds(), 0))
             continue
-            
 
         if not tweets:
             print(f'{datetime.now()} - No more tweets found...')
             break
+
 
         for tweet in tweets:
             tweet_count += 1
@@ -112,7 +114,7 @@ async def main():
             if hasattr(tweet, "entities") and "urls" in tweet.entities:
                 expanded_urls = [url["expanded_url"] for url in tweet.entities["urls"]]
             
-            # Verify if the tweet has gata in '_data' and 'legacy'
+            # Verify if the tweet has data in '_data' and 'legacy'
             if hasattr(tweet, '_data') and 'legacy' in tweet._data:
                 legacy_data = tweet._data['legacy']
 
@@ -129,6 +131,7 @@ async def main():
                 print(f'Tweet {tweet_count}: No legacy in _data')
             
             # ------
+            # Extracts conversation ID for replies
             if "legacy" in tweet._data and "conversation_id_str" in tweet._data["legacy"]:
                 conversation_id = tweet._data["legacy"]["conversation_id_str"]
             else:
@@ -136,6 +139,8 @@ async def main():
                 
             replies = await get_replies(client, conversation_id) if conversation_id else []
 
+
+            # Data selection:
             tweet_data = [tweet_count,
                         tweet.user.name,
                         tweet.text,
@@ -147,6 +152,7 @@ async def main():
                         expanded_urls                        
             ]
             
+            # Save data
             with open('tweets.csv', 'a', newline='', encoding='utf-8-sig') as file:   # 'a': append mode
                 writer = csv.writer(file)
                 writer.writerow(tweet_data)
