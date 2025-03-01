@@ -11,3 +11,4 @@ azure-core
 python-docx
 transformers
 torch
+twikit
