@@ -4,6 +4,8 @@ from google import genai
 from google.genai import types
 import os
 
+st.set_page_config(page_title="Ruti Metro", page_icon="🚀")
+
 # Configurar el cliente de Google Gemini
 client = genai.Client(api_key='API_KEY')  # Reemplaza con tu API key real
 
@@ -34,7 +36,8 @@ def remove_think_text(text):
     return text
 
 # Título de la aplicación
-st.title("Asistente Virtual Ruti - Planificador de Rutas en Medellín")
+st.title("🤖 Asistente Virtual Ruti - Planificador de Rutas en Medellín")
+
 
 # Campos de entrada para el origen y destino
 origin = st.text_input("Origen (ej: Sabaneta, Parque sabaneta)", "")
@@ -114,3 +117,4 @@ if st.button("Calcular Ruta"):
             st.error(f"Error al calcular la ruta: {response.text}")
     else:
         st.warning("Por favor, ingresa un origen y un destino.")
+        
