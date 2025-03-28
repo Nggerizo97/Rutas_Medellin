@@ -1,26 +1,24 @@
 import streamlit as st
 import requests
-from azure.ai.inference import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
-from azure.ai.inference.models import SystemMessage, UserMessage
+from google import genai
+from google.genai import types
 import os
 
+# Configurar el cliente de Google Gemini
+client = genai.Client(api_key='API_KEY')  # Reemplaza con tu API key real
 
-# Inicializar el cliente de Azure
-model = ChatCompletionsClient(
-    endpoint="END_POINT",  # Cambiar por el endpoint de Azure
-    credential=AzureKeyCredential("API_KEY"),
-)
-
-# Función para enviar el prompt a Azure
-def send_request_to_azure(prompt):
-    response = model.complete(
-        messages=[
-            SystemMessage(content="Eres un asistente virtual llamado Ruti que guía a las personas en la ciudad. Tu objetivo es proporcionar indicaciones claras y amigables para que los usuarios lleguen a su destino."),
-            UserMessage(content=prompt)
-        ]
+# Función para enviar el prompt a Gemini
+def send_request_to_gemini(prompt):
+    response = client.models.generate_content(
+        model="gemma-3-27b-it",
+        contents=[prompt],
+        config=types.GenerateContentConfig(
+            max_output_tokens=500,
+            temperature=0.7,  # Un poco más alto para respuestas más creativas
+            top_p=0.9
+        )
     )
-    return response
+    return response.text  # Asumiendo que la respuesta tiene un atributo text
 
 # Función para eliminar el texto <think>
 def remove_think_text(text):
@@ -75,20 +73,27 @@ if st.button("Calcular Ruta"):
             
             # Crear el prompt para el asistente virtual
             prompt = f"""
-            Hola, me llamo Ruti y hoy quiero acompañarte a darte las indicaciones para este viaje.
-            Aquí están las instrucciones para llegar desde {origin} hasta {destination}:
+            Eres un asistente virtual llamado Ruti que guía a las personas en la ciudad de Medellín. 
+            Tu objetivo es proporcionar indicaciones claras y amigables para que los usuarios lleguen a su destino.
+            
+            Por favor, interpreta estas instrucciones técnicas y proporcióname una respuesta humanizada:
+            
+            Viaje desde {origin} hasta {destination}:
             {formatted_instructions}
-
-            Por favor, interpreta estas instrucciones y proporciona una respuesta amigable y clara para el usuario.
+            
+            La respuesta debe ser:
+            1. Amigable y cercana
+            2. Dividida en pasos claros
+            3. Incluir consejos útiles (como "lleve paraguas si va a llover")
+            4. Ser positiva y alentadora
             """
             
-            # Obtener la respuesta humanizada de Azure
+            # Obtener la respuesta humanizada de Gemini
             try:
-                azure_response = send_request_to_azure(prompt)
-                humanized_response = azure_response.choices[0].message.content
+                gemini_response = send_request_to_gemini(prompt)
                 
                 # Eliminar el texto <think> si está presente
-                humanized_response = remove_think_text(humanized_response)
+                humanized_response = remove_think_text(gemini_response)
                 
                 # Mostrar la respuesta humanizada
                 st.subheader("Respuesta de Ruti")
@@ -98,7 +103,7 @@ if st.button("Calcular Ruta"):
                 if not os.path.exists("informe"):
                     os.makedirs("informe")
                 
-                file_path = os.path.join("informe", "informe_ruti.docx")
+                file_path = os.path.join("informe", "informe_ruti.txt")
                 with open(file_path, "w", encoding="utf-8") as file:
                     file.write(humanized_response)
                 st.success(f"El informe se ha guardado en: {file_path}")
